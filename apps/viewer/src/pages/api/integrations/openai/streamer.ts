@@ -9,6 +9,7 @@ export const config = {
 }
 
 const handler = async (req: Request) => {
+  console.log('Hi!')
   if (req.method === 'OPTIONS') {
     return new Response('ok', {
       headers: {

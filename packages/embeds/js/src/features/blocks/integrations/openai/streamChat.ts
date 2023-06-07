@@ -23,9 +23,11 @@ export const streamChat =
     let message = ''
     while (!done) {
       const { value, done: doneReading } = await reader.read()
+      console.log(value, doneReading)
       done = doneReading
       const chunkValue = decoder.decode(value)
       message += chunkValue
+      console.log(message)
       onStreamedMessage?.(message)
     }
     return message
