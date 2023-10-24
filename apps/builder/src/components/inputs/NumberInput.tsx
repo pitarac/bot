@@ -1,4 +1,4 @@
-import { VariablesButton } from '@/features/variables/components/VariablesButton'
+import React, { useState, useEffect } from 'react';
 import {
   NumberInputProps,
   NumberInput as ChakraNumberInput,
@@ -10,29 +10,29 @@ import {
   FormControl,
   FormLabel,
   Stack,
-} from '@chakra-ui/react'
-import { Variable, VariableString } from '@typebot.io/schemas'
-import { useEffect, useState } from 'react'
-import { useDebouncedCallback } from 'use-debounce'
-import { env } from '@typebot.io/lib'
-import { MoreInfoTooltip } from '../MoreInfoTooltip'
+} from '@chakra-ui/react';
+import { useDebouncedCallback } from 'use-debounce';
+import { env } from '@typebot.io/lib';
+import { MoreInfoTooltip } from '../MoreInfoTooltip';
+import { Variable, VariableString } from '@typebot.io/schemas';
+import { VariablesButton } from '@/features/variables/components/VariablesButton';
 
 type Value<HasVariable> = HasVariable extends true | undefined
   ? number | VariableString
-  : number
+  : number;
 
 type Props<HasVariable extends boolean> = {
-  defaultValue: Value<HasVariable> | undefined
-  debounceTimeout?: number
-  withVariableButton?: HasVariable
-  label?: string
-  moreInfoTooltip?: string
-  isRequired?: boolean
-  direction?: 'row' | 'column'
-  onValueChange: (value?: Value<HasVariable>) => void
-} & Omit<NumberInputProps, 'defaultValue' | 'value' | 'onChange' | 'isRequired'>
+  defaultValue: Value<HasVariable> | undefined;
+  debounceTimeout?: number;
+  withVariableButton?: HasVariable;
+  label?: string;
+  moreInfoTooltip?: string;
+  isRequired?: boolean;
+  direction?: 'row' | 'column';
+  onValueChange: (value?: Value<HasVariable>) => void;
+} & Omit<NumberInputProps, 'defaultValue' | 'value' | 'onChange' | 'isRequired'>;
 
-export const NumberInput = <HasVariable extends boolean>({
+const NumberInput = <HasVariable extends boolean>({
   defaultValue,
   onValueChange,
   withVariableButton,
@@ -43,45 +43,45 @@ export const NumberInput = <HasVariable extends boolean>({
   direction,
   ...props
 }: Props<HasVariable>) => {
-  const [value, setValue] = useState(defaultValue?.toString() ?? '')
+  const [value, setValue] = useState<string>(defaultValue?.toString() ?? '');
 
   const onValueChangeDebounced = useDebouncedCallback(
     onValueChange,
     env('E2E_TEST') === 'true' ? 0 : debounceTimeout
-  )
+  );
 
-  useEffect(
-    () => () => {
-      onValueChangeDebounced.flush()
-    },
-    [onValueChangeDebounced]
-  )
+  useEffect(() => {
+    return () => {
+      onValueChangeDebounced.flush();
+    };
+  }, [onValueChangeDebounced]);
 
   const handleValueChange = (newValue: string) => {
-    if (value.startsWith('{{') && value.endsWith('}}') && newValue !== '')
-      return
-    setValue(newValue)
-    if (newValue.endsWith('.') || newValue.endsWith(',')) return
-    if (newValue === '') return onValueChangeDebounced(undefined)
+    if (value.startsWith('{{') && value.endsWith('}}') && newValue !== '') return;
+
+    setValue(newValue);
+
+    if (newValue.endsWith('.') || newValue.endsWith(',')) return;
+    if (newValue === '') return onValueChangeDebounced(undefined);
     if (
       newValue.startsWith('{{') &&
       newValue.endsWith('}}') &&
       newValue.length > 4 &&
       (withVariableButton ?? true)
     ) {
-      onValueChangeDebounced(newValue as Value<HasVariable>)
-      return
+      onValueChangeDebounced(newValue as Value<HasVariable>);
+      return;
     }
-    const numberedValue = parseFloat(newValue)
-    if (isNaN(numberedValue)) return
-    onValueChangeDebounced(numberedValue)
-  }
+    const numberedValue = parseFloat(newValue);
+    if (isNaN(numberedValue)) return;
+    onValueChangeDebounced(numberedValue);
+  };
 
   const handleVariableSelected = (variable?: Variable) => {
-    if (!variable) return
-    const newValue = `{{${variable.name}}}`
-    handleValueChange(newValue)
-  }
+    if (!variable) return;
+    const newValue = `{{${variable.name}}}`;
+    handleValueChange(newValue);
+  };
 
   const Input = (
     <ChakraNumberInput onChange={handleValueChange} value={value} {...props}>
@@ -91,7 +91,7 @@ export const NumberInput = <HasVariable extends boolean>({
         <NumberDecrementStepper />
       </NumberInputStepper>
     </ChakraNumberInput>
-  )
+  );
 
   return (
     <FormControl
@@ -103,9 +103,7 @@ export const NumberInput = <HasVariable extends boolean>({
       {label && (
         <FormLabel mb="0" flexShrink={0}>
           {label}{' '}
-          {moreInfoTooltip && (
-            <MoreInfoTooltip>{moreInfoTooltip}</MoreInfoTooltip>
-          )}
+          {moreInfoTooltip && <MoreInfoTooltip>{moreInfoTooltip}</MoreInfoTooltip>}
         </FormLabel>
       )}
       {withVariableButton ?? true ? (
@@ -117,5 +115,7 @@ export const NumberInput = <HasVariable extends boolean>({
         Input
       )}
     </FormControl>
-  )
-}
+  );
+};
+
+export default NumberInput;
